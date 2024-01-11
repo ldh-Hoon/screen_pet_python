@@ -34,13 +34,13 @@ def pilImageToSurface(pilImage):
 
 
 # 다운받을 이미지 url
-#url = "https://raw.githubusercontent.com/ldh-Hoon/ScreenPet/main/penguin.png"
+url = "https://raw.githubusercontent.com/ldh-Hoon/ScreenPet/main/penguin.png"
 
 # request.get 요청
-#res = requests.get(url)
+res = requests.get(url)
 
-#image = Image.open(BytesIO(res.content)).convert('RGBA')
-image = Image.open("image/penguin.png").convert('RGBA')
+image = Image.open(BytesIO(res.content)).convert('RGBA')
+#image = Image.open("image/penguin.png").convert('RGBA')
 image = image.resize((image.width//2, image.height//2))
 images = []
 
