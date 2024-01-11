@@ -34,7 +34,7 @@ def pilImageToSurface(pilImage):
 
 
 # 다운받을 이미지 url
-url = "https://raw.githubusercontent.com/ldh-Hoon/screen_pet_python/main/image/penguin.png"
+url = "https://raw.githubusercontent.com/ldh-Hoon/ScreenPet/main/penguin.png"
 
 # request.get 요청
 res = requests.get(url)
