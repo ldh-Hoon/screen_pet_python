@@ -4,7 +4,10 @@ import win32con
 import win32gui
 import ctypes
 import pet
+import requests
+from io import BytesIO
 from PIL import Image
+import time
 
 pygame.init()
 
@@ -29,7 +32,14 @@ def pilImageToSurface(pilImage):
     return pygame.image.fromstring(
         pilImage.tobytes(), pilImage.size, pilImage.mode).convert_alpha()
 
-image = Image.open(os.path.join("image/penguin.png")).convert('RGBA')
+
+# 다운받을 이미지 url
+url = "https://raw.githubusercontent.com/ldh-Hoon/screen_pet_python/main/image/penguin.png"
+
+# request.get 요청
+res = requests.get(url)
+
+image = Image.open(BytesIO(res.content)).convert('RGBA')
 image = image.resize((image.width//2, image.height//2))
 images = []
 
