@@ -19,6 +19,7 @@ class Pet:
         self.flip = False
         self.slide_end = False
         self.dragging = False
+        self.food_found = False
         self.tx = 0
         self.ty = 0
         self.jty = -5
@@ -43,25 +44,6 @@ class Pet:
             self.tx = max(0, min(self.tx, self.MAX_x - 100))
             self.ty = max(0, min(self.ty, self.MAX_y - 100))
             
-            if self.need_act < 1:
-                if self.do_end:
-                    n = 1
-                    self.need_act = random.randint(5, 60)
-            else:
-                self.need_act -= 1
-            
-            if n > 1:
-                self.jty = 4
-                self.is_jump = True
-                self.act_change = True
-            
-            if self.is_jump:
-                if self.jty>-5:
-                    self.y-=5 * self.jty
-                    self.jty -= 1
-                else:
-                    self.is_Jump = False
-                    self.act_change = True
             
             if self.mode == "idle":
                 if n > 0.99:
@@ -83,7 +65,7 @@ class Pet:
                             self.mode = "move"
                             self.doing = "none"
 
-            elif self.mode == "move":
+            if self.mode == "move":
                 if self.doing == "none":
                     self.slide_end = False
                     self.do_end = False
@@ -95,6 +77,17 @@ class Pet:
                         self.tx = self.x + random.randint(-150, 150)
                         self.ty = self.y + random.randint(-150, 150)
 
+                    if self.food_found:
+                        self.food_found = False
+                        
+                        self.tx = self.food_tx
+                        self.ty = self.food_ty
+
+                        self.mode = "move"
+                        self.doing = "slide"
+                    else:
+                        self.doing = random.choice(self.go_list)
+                    
                     self.tx = max(0, min(self.tx, self.MAX_x - 100))
                     self.ty = max(0, min(self.ty, self.MAX_y - 100))
 
@@ -104,8 +97,6 @@ class Pet:
                         self.back = True
                     else:
                         self.flip = self.x > self.tx
-
-                    self.doing = random.choice(self.go_list)
                     if self.doing != "slide":
                         angle = math.atan2(self.ty - self.y, self.tx - self.x)
                         self.dx = int(4 * math.cos(angle))

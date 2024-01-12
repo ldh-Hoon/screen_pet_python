@@ -7,7 +7,27 @@ import cat
 import requests
 from io import BytesIO
 from PIL import Image
-import time
+import time, threading
+import keyboard
+import pyautogui
+
+class Hook(threading.Thread):
+    def __init__(self):
+        super(Hook, self).__init__()
+        self.daemon = True
+        self.add = False
+        
+        keyboard.unhook_all()
+        keyboard.add_hotkey('f4', print, args=['\nf4 was pressed'])
+        
+    def run(self):
+        while True:
+            key = keyboard.read_hotkey(suppress=False)
+            if key == 'f4':
+                self.add = True
+
+h = Hook()
+h.start()
 
 pygame.init()
 
@@ -15,7 +35,7 @@ user32 = ctypes.windll.user32
 screensize = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)  # 해상도 구하기
 screen = pygame.display.set_mode(screensize, pygame.NOFRAME)
 done = False
-fuchsia = (255, 0, 128)  # Transparency color
+fuchsia = (200, 200, 200)  # Transparency color
 dark = (0, 0, 0)
 
 win32gui.SetWindowPos(pygame.display.get_wm_info()['window'], win32con.HWND_TOPMOST, 0,0,0,0, win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
@@ -40,7 +60,7 @@ res = requests.get(url)
 
 fish = Image.open(BytesIO(res.content)).convert('RGBA')
 #image = Image.open("image/penguin.png").convert('RGBA')
-fish = fish.resize((fish.width*2, fish.height*2))
+fish = fish.resize((fish.width//6, fish.height//6))
 fish = pilImageToSurface(fish)
 
 # 다운받을 이미지 url
@@ -51,25 +71,25 @@ res = requests.get(url)
 
 image = Image.open(BytesIO(res.content)).convert('RGBA')
 #image = Image.open("image/penguin.png").convert('RGBA')
-image = image.resize((image.width*2, image.height*2))
+image = image.resize((image.width, image.height))
 images = []
 
 p = cat.Cat()
 p.MAX_x, p.MAX_y = screensize
-p.imgdx = image.width//12
-p.imgdy = image.height//8
+p.imgdx = image.width//12 + 1
+p.imgdy = image.height//8 + 1
 
 p.dragging = False
 
-for i in range(image.height//p.imgdy):
+for i in range(0, image.height//p.imgdy):
     temp = []
-    for j in range(image.width//p.imgdx):
+    for j in range(0, image.width//p.imgdx):
         image_c = image.crop((j*p.imgdx,i*p.imgdy,j*p.imgdx+p.imgdx,i*p.imgdy+p.imgdy))
         
         # Convert PIL image to pygame surface image 
         py_image = pilImageToSurface(image_c)
         temp.append(py_image)
-
+        screen.blit(py_image, (j, i))
     images.append(temp)
 
 
@@ -85,27 +105,41 @@ def draw(p, images, screen):
         screen.blit(img, (p.x, p.y))
 
 screen.convert_alpha()
+
+fish_list = []
+def fish_add():
+    position = pyautogui.position()
+    if h.add == True:
+        h.add = False
+        if len(fish_list)==0:
+            fish_list.append((position.x, position.y))
+
+
 while not done:
+    screen.fill(fuchsia)
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             done = True
-
-        if pygame.mouse.get_pressed()[0]:
-            mx, my = pygame.mouse.get_pos()
-            screen.blit(fish, (mx, my))
-
-
-    p.update_frame()
     
+    fish_add()
+    if len(fish_list)>0:
+        for x, y in fish_list:
+            screen.blit(fish, (x, y))
+            p.food_tx = x
+            p.food_ty = y
+            p.food_found = True
+        if abs(p.x - fish_list[0][0]) < 10 and abs(p.y - fish_list[0][1]) < 10:
+            fish_list = []
+    
+    p.update_frame()   
     p.acting()
     # 프레임 업데이트
     # 화면 채우기
-    screen.fill(fuchsia)
 
     # Pet 그리기
     draw(p, images, screen)
+
     # 화면 업데이트
     pygame.display.update()    
-    time.sleep(0.05)
-    print("\r", end="")
+    time.sleep(0.06)
