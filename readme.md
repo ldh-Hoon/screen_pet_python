@@ -1,5 +1,7 @@
 # Screen_pet 
-python으로 변환
+기존 java 코드를 python으로 변환
+
+dist 폴더 내에 실행가능한 exe파일이 있습니다.
 
 ![Animation](https://github.com/ldh-Hoon/screen_pet_python/assets/139981434/c701a823-9216-47e5-a885-8a9d22b1ac5a)
 
